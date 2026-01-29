@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kumar Garage - කුමාර් ගරේජ්</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- JS Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="dark">
+
+    <!-- Header -->
+    <header class="top">
+        <div class="header-content">
+            <h1><i class="fas fa-car"></i> Kumar Garage</h1>
+            <p class="subtitle"><i class="fas fa-map-marker-alt"></i> Asirigama, Sirambiadiya, Puttalam</p>
+            <p class="contact"><i class="fas fa-phone"></i> 0723388590</p>
+            <button class="mode-toggle" onclick="toggleMode()">
+                <i class="fas fa-moon"></i> / <i class="fas fa-sun"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Home Tab -->
+    <div id="home" class="tab">
+        <div class="dashboard">
+            <div class="welcome-card">
+                <h2><i class="fas fa-hand-wave"></i> සාදරයෙන් පිළිගනිමු!</h2>
+                <p>කුමාර් ගරේජ් කළමනාකරණ පද්ධතිය</p>
+                <div class="quick-stats">
+                    <div class="stat">
+                        <i class="fas fa-receipt"></i>
+                        <span>මුළු ගනුදෙනු: <strong id="totalTrans">0</strong></span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-users"></i>
+                        <span>ගැනුම්කරුවන්: <strong id="totalCust">0</strong></span>
+                    </div>
+                    <div class="stat">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>මුළු ආදායම: <strong id="totalRev">Rs 0</strong></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recent-activity">
+                <h3><i class="fas fa-history"></i> මෑත ගනුදෙනු</h3>
+                <div id="recentList"></div>
+            </div>
+            
+            <div class="quick-actions">
+                <h3><i class="fas fa-bolt"></i> ක්ෂණික ක්‍රියා</h3>
+                <button class="action-btn" onclick="showTab('add')">
+                    <i class="fas fa-plus-circle"></i> නව ගනුදෙනුව
+                </button>
+                <button class="action-btn" onclick="showTab('history')">
+                    <i class="fas fa-list"></i> ඉතිහාසය
+                </button>
+                <button class="action-btn" onclick="exportExcel()">
+                    <i class="fas fa-file-excel"></i> Excel අපනයනය
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Record Tab -->
+    <div id="add" class="tab hidden">
+        <div class="form-container">
+            <h2><i class="fas fa-plus-circle"></i> නව ගනුදෙනුව</h2>
+            
+            <div class="form-section">
+                <h3><i class="far fa-calendar-alt"></i> අලුත්වැඩියා දිනය</h3>
+                <input type="date" id="date" class="form-input">
+            </div>
+            
+            <div class="form-section">
+                <h3><i class="fas fa-user"></i> ගැනුම්කරු</h3>
+                <input id="customer" placeholder="නම *" class="form-input">
+                <input id="address" placeholder="ලිපිනය" class="form-input">
+                <input id="phone" placeholder="දුරකථන අංකය *" class="form-input">
+            </div>
+            
+            <div class="form-section">
+                <h3><i class="fas fa-car"></i> වාහනය</h3>
+                <input id="vehicleNo" placeholder="වාහන අංකය *" class="form-input">
+                <input id="vehicleType" placeholder="වාහන වර්ගය" class="form-input">
+                <input id="engineType" placeholder="එන්ජිම වර්ගය" class="form-input">
+                <input id="engineNo" placeholder="එන්ජිම අංකය" class="form-input">
+                <input id="mileage" placeholder="කි.මී." class="form-input">
+            </div>
+            
+            <div class="form-section">
+                <h3><i class="fas fa-tools"></i> කරන වැඩ</h3>
+                <div id="jobsList" class="dynamic-list"></div>
+                <button class="add-btn" onclick="addJob()">
+                    <i class="fas fa-plus"></i> වැඩ එක් කරන්න
+                </button>
+            </div>
+            
+            <div class="form-section">
+                <h3><i class="fas fa-cogs"></i> කොටස්</h3>
+                <div id="partsList" class="dynamic-list"></div>
+                <button class="add-btn" onclick="addPart()">
+                    <i class="fas fa-plus"></i> කොටස් එක් කරන්න
+                </button>
+            </div>
+            
+            <div class="form-section">
+                <h3><i class="fas fa-wrench"></i> කම්කරු ගාස්තු</h3>
+                <input id="labour" type="number" placeholder="රුපියල්" class="form-input">
+            </div>
+            
+            <div class="form-section">
+                <h3><i class="fas fa-money-bill-wave"></i> ගෙවීම</h3>
+                <input id="paid" type="number" placeholder="ගෙවූ මුදල *" class="form-input">
+                <select id="paymentType" onchange="toggleCheque()" class="form-select">
+                    <option value="Cash">නොමිලේ</option>
+                    <option value="Cheque">චෙක්පත</option>
+                    <option value="Card">කාඩ්පත</option>
+                </select>
+                
+                <div id="chequeBox" class="hidden cheque-details">
+                    <input id="chequeNo" placeholder="චෙක්පත් අංකය" class="form-input">
+                    <input id="bankName" placeholder="බැංකුව" class="form-input">
+                    <input type="date" id="chequeDate" class="form-input">
+                    <select id="chequeStatus" class="form-select">
+                        <option value="Pending">පැහැරී ඇත</option>
+                        <option value="Cleared">පිරිසිදු කරන ලදී</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button class="save-btn" onclick="saveRecord()">
+                    <i class="fas fa-save"></i> සුරකින්න
+                </button>
+                <button class="cancel-btn" onclick="clearForm()">
+                    <i class="fas fa-times"></i> ඉවත් කරන්න
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="history" class="tab hidden">
+        <div class="history-container">
+            <h2><i class="fas fa-history"></i> ගනුදෙනු ඉතිහාසය</h2>
+            
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="සෙවුම් කරන්න (වාහන / දුරකථන / ඉන්වොයිස් / නම)" 
+                       onkeyup="search(this.value)" class="search-input">
+            </div>
+            
+            <div class="action-buttons">
+                <button class="action-btn" onclick="exportExcel()">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+                <button class="action-btn" onclick="exportBackup()">
+                    <i class="fas fa-download"></i> උපස්ථය
+                </button>
+                <label class="action-btn import-btn">
+                    <i class="fas fa-upload"></i> ආයාත කරන්න
+                    <input type="file" onchange="importBackup(this)" style="display: none;">
+                </label>
+                <button class="action-btn" onclick="loadHistory(records)">
+                    <i class="fas fa-sync"></i> ප්‍රතිනව්නය
+                </button>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterHistory('all')">සියල්ල</button>
+                <button class="filter-btn" onclick="filterHistory('paid')">ගෙවා ඇත</button>
+                <button class="filter-btn" onclick="filterHistory('pending')">පැහැරී ඇත</button>
+                <button class="filter-btn" onclick="filterHistory('partial')">අර්ධ</button>
+                <button class="filter-btn" onclick="filterHistory('cheque_pending')">චෙක්පත්</button>
+            </div>
+            
+            <div id="historyList" class="history-grid"></div>
+            
+            <div class="history-summary">
+                <div class="summary-item">
+                    <span>මුළු ගනුදෙනු:</span>
+                    <strong id="historyCount">0</strong>
+                </div>
+                <div class="summary-item">
+                    <span>මුළු ආදායම:</span>
+                    <strong id="historyTotal">Rs 0</strong>
+                </div>
+                <div class="summary-item">
+                    <span>ශේෂය:</span>
+                    <strong id="historyBalance">Rs 0</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Tab -->
+    <div id="analytics" class="tab hidden">
+        <div class="analytics-container">
+            <h2><i class="fas fa-chart-line"></i> විශ්ලේෂණ</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card revenue">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <div class="stat-content">
+                        <h3>මුළු ආදායම</h3>
+                        <p class="stat-value" id="totalRevenue">Rs 0</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card balance">
+                    <i class="fas fa-scale-balanced"></i>
+                    <div class="stat-content">
+                        <h3>මුළු ශේෂය</h3>
+                        <p class="stat-value" id="totalBalance">Rs 0</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card customers">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-content">
+                        <h3>ගැනුම්කරුවන්</h3>
+                        <p class="stat-value" id="customerCount">0</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card transactions">
+                    <i class="fas fa-receipt"></i>
+                    <div class="stat-content">
+                        <h3>ගනුදෙනු</h3>
+                        <p class="stat-value" id="transactionCount">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-container">
+                <div class="chart-box">
+                    <h3><i class="fas fa-chart-bar"></i> මාසික ආදායම</h3>
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+                
+                <div class="chart-box">
+                    <h3><i class="fas fa-chart-pie"></i> ගෙවීම් විලාසය</h3>
+                    <canvas id="paymentChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="top-customers">
+                <h3><i class="fas fa-trophy"></i> ඉහළම ගැනුම්කරුවන්</h3>
+                <div id="topCustomers" class="customers-list"></div>
+            </div>
+            
+            <div class="recent-summary">
+                <h3><i class="fas fa-clock"></i> මෑත සාරාංශය</h3>
+                <div id="recentSummary"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customers Tab -->
+    <div id="customers" class="tab hidden">
+        <div class="customers-container">
+            <h2><i class="fas fa-users"></i> ගැනුම්කරුවන්</h2>
+            
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="ගැනුම්කරු සෙවුම් කරන්න..." 
+                       onkeyup="searchCustomers(this.value)" class="search-input">
+            </div>
+            
+            <div class="customers-stats">
+                <div class="customer-stat">
+                    <i class="fas fa-user-check"></i>
+                    <span>සක්‍රීය ගැනුම්කරුවන්: <strong id="activeCustomers">0</strong></span>
+                </div>
+                <div class="customer-stat">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>මාසික ආදායම: <strong id="monthlyRevenue">Rs 0</strong></span>
+                </div>
+            </div>
+            
+            <div id="customersList" class="customers-grid"></div>
+        </div>
+    </div>
+
+    <!-- Invoice Preview -->
+    <div id="invoice" class="invoice hidden">
+        <div class="invoice-container">
+            <div class="invoice-header">
+                <button class="close-btn" onclick="closeInvoice()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2><i class="fas fa-receipt"></i> ඉන්වොයිස්</h2>
+            </div>
+            <div id="invoiceContent" class="invoice-content"></div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item" onclick="showTab('home')">
+            <i class="fas fa-home"></i>
+            <span>මුල් පිටුව</span>
+        </div>
+        <div class="nav-item" onclick="showTab('add')">
+            <i class="fas fa-plus-circle"></i>
+            <span>නව එකතුව</span>
+        </div>
+        <div class="nav-item" onclick="showTab('history')">
+            <i class="fas fa-history"></i>
+            <span>ඉතිහාසය</span>
+        </div>
+        <div class="nav-item" onclick="showTab('analytics')">
+            <i class="fas fa-chart-line"></i>
+            <span>විශ්ලේෂණ</span>
+        </div>
+        <div class="nav-item" onclick="showTab('customers')">
+            <i class="fas fa-users"></i>
+            <span>ගැනුම්කරු</span>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="app.js"></script>
+
+</body>
+</html>
